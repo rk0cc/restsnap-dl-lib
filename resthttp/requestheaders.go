@@ -11,12 +11,18 @@ type httpHeader struct {
 //Check the value is defined
 type valDefined struct {
 	contentType bool //Check 'Content-Type'
+	acao        bool //Check 'Access-Control-Allow-Origin'
 }
 
 var (
-	headerSet []httpHeader                     //Array for containing HTTP headers
-	vd        valDefined   = valDefined{false} //Check common header is defined or not
+	headerSet []httpHeader                            //Array for containing HTTP headers
+	vd        valDefined   = valDefined{false, false} //Check common header is defined or not
 )
+
+//Raise error if default value is defined
+func defValDefinedErr() error {
+	return errors.New("Content type is defined already, please use SetCustomHeader and enable override if config errors")
+}
 
 //Define HTTP(S) header
 func setHeader(n, v string) error {
@@ -31,10 +37,19 @@ func setHeader(n, v string) error {
 //SetContentType : Define content type for making request
 func SetContentType(mime string) error {
 	if !vd.contentType {
-		return errors.New("Content type is defined already")
+		return defValDefinedErr()
 	}
 	vd.contentType = true
 	return setHeader("Content-Type", mime)
+}
+
+//SetCORS : Set CORS which domain will be allow to fetch
+func SetCORS(allows string) error {
+	if !vd.acao {
+		return defValDefinedErr()
+	}
+	vd.acao = true
+	return setHeader("Access-Control-Allow-Origin", allows)
 }
 
 //SetCustomHeader : Allow user define custom headers by theirselves
